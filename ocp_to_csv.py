@@ -3,7 +3,7 @@ import subprocess
 import argparse
 import json
 
-report="pod_report.csv"
+report = "pod_report.csv"
 # Parse command-line arguments
 parser = argparse.ArgumentParser(description='Extract pod information and create a CSV file.')
 parser.add_argument('--exclude-ns', type=str, help='Namespaces to exclude (comma-separated)')
@@ -93,6 +93,12 @@ for project in project_data["items"]:
         # Check if the pod is managed by a StatefulSet
         if owner_kind == "StatefulSet":
             statefulset_name = owner_name
+
+            # Retrieve the number of replicas from the StatefulSet
+            cmd = f"oc get statefulset/{statefulset_name} -n {namespace} -o json"
+            output_statefulset = subprocess.check_output(cmd, shell=True)
+            statefulset_data = json.loads(output_statefulset)
+            replicas = statefulset_data["spec"].get("replicas", "")
 
         labels = pod["metadata"]["labels"] if "labels" in pod["metadata"] else ""
 
